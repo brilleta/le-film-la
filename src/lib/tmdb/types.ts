@@ -82,6 +82,8 @@ export interface MediaSummary {
   poster_path: string | null
   backdrop_path: string | null
   vote_average: number
+  /** Recherche IA uniquement : pourquoi ce titre correspond à la description. */
+  reason?: string
 }
 
 export interface MediaDetails extends MediaSummary, TmdbDetails {

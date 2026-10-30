@@ -1,0 +1,7 @@
+.git
+.claude
+.tanstack
+.env
+.env.*
+dist
+node_modules

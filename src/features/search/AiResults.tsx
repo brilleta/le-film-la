@@ -2,18 +2,25 @@ import { useQuery } from '@tanstack/react-query'
 import { SearchX, Sparkles } from 'lucide-react'
 import { EmptyState } from '@/components/EmptyState'
 import { ErrorState } from '@/components/ErrorState'
-import { aiSearchOptions } from '@/services/ai-search'
+import { aiSearchOptions } from '@/services/aiSearch'
 import { MediaGrid, MediaGridSkeleton } from './MediaGrid'
 import { mediaListKey } from './mediaKey'
 import { ResultsTransition } from './ResultsTransition'
 
 export function AiResults({ description }: { description: string }) {
-  const { data, error, isPending, refetch } = useQuery(aiSearchOptions(description))
+  const { data, error, isFetching, isPending, refetch } = useQuery(aiSearchOptions(description))
 
-  if (isPending) {
+  // Un nouvel essai après une erreur prend aussi plusieurs secondes : le chargement remplace le message d'erreur.
+  if (isPending || (error && isFetching)) {
     return (
       <ResultsTransition stateKey="pending">
-        <MediaGridSkeleton />
+        <div className="space-y-4">
+          <p role="status" className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <Sparkles className="size-4 text-primary motion-safe:animate-pulse" aria-hidden="true" />
+            On cherche ton film, ça peut prendre quelques secondes…
+          </p>
+          <MediaGridSkeleton count={10} />
+        </div>
       </ResultsTransition>
     )
   }
@@ -26,17 +33,7 @@ export function AiResults({ description }: { description: string }) {
     )
   }
 
-  if (data.status === 'unavailable') {
-    return (
-      <ResultsTransition stateKey="unavailable">
-        <EmptyState icon={<Sparkles />} title={data.message}>
-          La recherche par description arrive. En attendant, le mode Classique trouve les films et les séries par leur titre.
-        </EmptyState>
-      </ResultsTransition>
-    )
-  }
-
-  if (data.results.length === 0) {
+  if (data.length === 0) {
     return (
       <ResultsTransition stateKey={`empty-${description}`}>
         <EmptyState icon={<SearchX />} title="Aucun résultat">
@@ -47,9 +44,9 @@ export function AiResults({ description }: { description: string }) {
   }
 
   return (
-    <ResultsTransition stateKey={mediaListKey(data.results)}>
+    <ResultsTransition stateKey={mediaListKey(data)}>
       <section aria-label="Résultats de la recherche">
-        <MediaGrid results={data.results} />
+        <MediaGrid results={data} />
       </section>
     </ResultsTransition>
   )

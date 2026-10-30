@@ -1,6 +1,6 @@
 import { TriangleAlert } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { TmdbError } from '@/lib/tmdb/client'
+import { ApiError } from '@/lib/api'
 
 interface ErrorStateProps {
   error: unknown
@@ -8,7 +8,7 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({ error, onRetry }: ErrorStateProps) {
-  const message = error instanceof TmdbError ? error.message : 'Vérifie ta connexion et réessaie.'
+  const message = error instanceof ApiError ? error.message : 'Vérifie ta connexion et réessaie.'
 
   return (
     <div

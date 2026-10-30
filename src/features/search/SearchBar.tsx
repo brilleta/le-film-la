@@ -88,6 +88,7 @@ export function SearchBar({ query, mode, onQueryChange, onModeChange }: SearchBa
                 placeholder="Le titre du film ou de la série…"
                 aria-label="Titre du film ou de la série"
                 autoComplete="off"
+                maxLength={200}
                 enterKeyHint="search"
                 className="h-11 rounded-xl border-transparent bg-transparent pl-10 text-base md:text-base dark:bg-transparent"
               />
@@ -102,6 +103,7 @@ export function SearchBar({ query, mode, onQueryChange, onModeChange }: SearchBa
                 aria-label="Description libre du film ou de la série"
                 aria-describedby="ai-search-hint"
                 rows={4}
+                maxLength={300}
                 className="min-h-28 flex-1 resize-y rounded-xl border-transparent bg-transparent text-base md:text-base dark:bg-transparent"
               />
             </motion.div>

@@ -66,6 +66,7 @@ export function MediaCard({ media }: { media: MediaSummary }) {
       </motion.div>
       <div className="flex flex-1 flex-col gap-1 p-3">
         <h2 className="line-clamp-2 text-sm font-medium">{media.title}</h2>
+        {media.reason && <p className="pb-1 text-xs text-muted-foreground">{media.reason}</p>}
         <div className="mt-auto flex items-center justify-between gap-2 text-xs text-muted-foreground">
           <span>{[year, isSeries ? 'Série' : 'Film'].join(' · ')}</span>
           {rating && (

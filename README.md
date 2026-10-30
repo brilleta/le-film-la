@@ -2,13 +2,14 @@
 
 > Décris-le mal, on le trouve quand même.
 
-Application de recherche de films et de séries basée sur l'API TMDB, avec un mode Classique et un mode IA (interface seulement pour l'instant).
+Application de recherche de films et de séries, avec un mode Classique et un mode IA. Les données passent par un back Spring Boot, dans un repo séparé.
 
 ## Démarrer
 
+Le back doit tourner sur `http://localhost:8080` : `pnpm dev` y redirige `/api`.
+
 ```sh
 pnpm install
-cp .env.example .env   # renseigner VITE_TMDB_TOKEN (Read Access Token TMDB)
 pnpm dev
 ```
 
@@ -19,9 +20,16 @@ pnpm dev
 - `pnpm lint` : oxlint
 - `pnpm preview` : sert le build en local
 
-## Token TMDB
+## Déploiement
 
-Le token est lu depuis `VITE_TMDB_TOKEN`. Il ne doit jamais être commité, mais Vite l'inclut en clair dans le JS livré au navigateur : il est donc visible par les visiteurs du site déployé. Seul un proxy côté serveur permettrait de le masquer.
+L'image Docker sert le build avec nginx sur le port 80 et redirige `/api` vers `BACKEND_URL`, à donner sans `/` final :
+
+```sh
+docker build -t le-film-la .
+docker run -p 8000:80 --network <réseau-du-back> -e BACKEND_URL=http://<service-back>:8080 le-film-la
+```
+
+Le front et le back doivent être sur le même réseau Docker défini par l'utilisateur (c'est le cas sur Coolify) : nginx utilise son DNS interne.
 
 ---
 

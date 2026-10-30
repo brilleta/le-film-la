@@ -1,12 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'motion/react'
+import { trendingOptions } from '@/lib/api'
 import { pageBackdropVariants } from '@/lib/motion'
 import { posterUrl } from '@/lib/tmdb/images'
-import { trendingMoviesOptions } from '@/lib/tmdb/queries'
 
 export function PosterMosaic() {
-  const { data } = useQuery(trendingMoviesOptions())
-  const posters = (data?.results ?? []).flatMap((movie) => posterUrl(movie.poster_path) ?? [])
+  const { data } = useQuery(trendingOptions())
+  const posters = (data ?? []).flatMap((media) => posterUrl(media.poster_path) ?? [])
 
   return (
     <motion.div
