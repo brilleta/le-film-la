@@ -19,10 +19,10 @@ export function MediaGrid({ results }: { results: MediaSummary[] }) {
   )
 }
 
-export function MediaGridSkeleton() {
+export function MediaGridSkeleton({ count = 20 }: { count?: number }) {
   return (
     <div className={gridClassName} role="status" aria-label="Chargement des résultats">
-      {Array.from({ length: 20 }, (_, index) => (
+      {Array.from({ length: count }, (_, index) => (
         <div key={index} className="glass overflow-hidden rounded-xl">
           <Skeleton className="aspect-2/3 rounded-none" />
           {/* Mêmes hauteurs que MediaCard : la grille ne saute pas à l'arrivée des résultats. */}

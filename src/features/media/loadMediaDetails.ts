@@ -1,7 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { notFound } from '@tanstack/react-router'
-import { TmdbError } from '@/lib/tmdb/client'
-import { mediaDetailsOptions } from '@/lib/tmdb/queries'
+import { ApiError, mediaDetailsOptions } from '@/lib/api'
 import type { MediaType } from '@/lib/tmdb/types'
 
 export async function loadMediaDetails(queryClient: QueryClient, mediaType: MediaType, id: string) {
@@ -9,7 +8,7 @@ export async function loadMediaDetails(queryClient: QueryClient, mediaType: Medi
   try {
     await queryClient.ensureQueryData(mediaDetailsOptions(mediaType, Number(id)))
   } catch (error) {
-    if (error instanceof TmdbError && error.status === 404) throw notFound()
+    if (error instanceof ApiError && error.status === 404) throw notFound()
     throw error
   }
 }

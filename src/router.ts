@@ -1,6 +1,6 @@
 import { QueryClient } from '@tanstack/react-query'
 import { createRouter, parseSearchWith, stringifySearchWith } from '@tanstack/react-router'
-import { TmdbError } from '@/lib/tmdb/client'
+import { ApiError } from '@/lib/api'
 import { routeTree } from './routeTree.gen'
 
 export const queryClient = new QueryClient({
@@ -8,7 +8,7 @@ export const queryClient = new QueryClient({
     queries: {
       staleTime: 5 * 60 * 1000,
       retry: (failureCount, error) =>
-        failureCount < 2 && (!(error instanceof TmdbError) || error.isRetryable),
+        failureCount < 2 && (!(error instanceof ApiError) || error.isRetryable),
     },
   },
 })
@@ -17,7 +17,6 @@ const keepRawValue = (value: string) => value
 
 export const router = createRouter({
   routeTree,
-  basepath: import.meta.env.BASE_URL,
   context: { queryClient },
   defaultPreload: 'intent',
   defaultPreloadStaleTime: 0,
