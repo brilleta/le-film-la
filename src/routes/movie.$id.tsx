@@ -1,6 +1,7 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, notFound, useCanGoBack, useRouter, type ErrorComponentProps } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
+import { motion } from 'motion/react'
 import { useEffect } from 'react'
 import { ErrorState } from '@/components/ErrorState'
 import { Button } from '@/components/ui/button'
@@ -9,6 +10,7 @@ import { MovieDetailSkeleton } from '@/features/movie/MovieDetailSkeleton'
 import { MovieBackdrop, MovieHero } from '@/features/movie/MovieHero'
 import { TrailerEmbed } from '@/features/movie/TrailerEmbed'
 import { pickTrailer } from '@/features/movie/trailer'
+import { movieContentVariants, pageItemVariants } from '@/lib/motion'
 import { TmdbError } from '@/lib/tmdb/client'
 import { movieDetailsOptions } from '@/lib/tmdb/queries'
 
@@ -42,14 +44,23 @@ function MoviePage() {
 
   return (
     <>
-      {/* Hors du bloc animé : son transform limiterait le fond à la largeur du contenu. */}
       <MovieBackdrop path={movie.backdrop_path} />
-      <div className="animate-fade-up mx-auto w-full max-w-6xl space-y-8 px-4 py-8">
-        <BackButton />
+      <motion.div variants={movieContentVariants} className="mx-auto w-full max-w-6xl space-y-8 px-4 py-8">
+        <motion.div variants={pageItemVariants}>
+          <BackButton />
+        </motion.div>
         <MovieHero movie={movie} />
-        {trailer && <TrailerEmbed video={trailer} movieTitle={movie.title} />}
-        {movie.credits.cast.length > 0 && <CastList cast={movie.credits.cast} />}
-      </div>
+        {trailer && (
+          <motion.div variants={pageItemVariants}>
+            <TrailerEmbed video={trailer} movieTitle={movie.title} />
+          </motion.div>
+        )}
+        {movie.credits.cast.length > 0 && (
+          <motion.div variants={pageItemVariants}>
+            <CastList cast={movie.credits.cast} />
+          </motion.div>
+        )}
+      </motion.div>
     </>
   )
 }

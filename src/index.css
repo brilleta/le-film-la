@@ -66,6 +66,8 @@
   }
   html {
     @apply font-sans;
+    /* Le contenu ne se décale pas quand la barre de défilement apparaît entre deux pages. */
+    scrollbar-gutter: stable;
   }
   body {
     @apply bg-background text-foreground min-h-dvh antialiased;

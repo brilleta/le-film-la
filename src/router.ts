@@ -31,4 +31,8 @@ declare module '@tanstack/react-router' {
   interface Register {
     router: typeof router
   }
+  interface HistoryState {
+    /** Affiche de la carte cliquée, déjà en cache : la page détail l'affiche sans attendre son chargement. */
+    posterPath?: string | null
+  }
 }

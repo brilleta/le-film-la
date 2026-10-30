@@ -1,9 +1,11 @@
 import { createFileRoute, Link, stripSearchParams } from '@tanstack/react-router'
+import { motion } from 'motion/react'
 import { AiResults } from '@/features/search/AiResults'
 import { ClassicResults } from '@/features/search/ClassicResults'
 import { PosterMosaic } from '@/features/search/PosterMosaic'
 import { SearchBar } from '@/features/search/SearchBar'
 import { searchParamsSchema } from '@/features/search/searchParams'
+import { pageItemVariants } from '@/lib/motion'
 import { cn } from '@/lib/utils'
 
 export const Route = createFileRoute('/')({
@@ -27,8 +29,9 @@ function HomePage() {
           !hasQuery && 'justify-center',
         )}
       >
-        <header className={cn('animate-fade-up text-center', !hasQuery && 'mb-2')}>
-          <h1
+        <header className={cn('text-center', !hasQuery && 'mb-2')}>
+          <motion.h1
+            variants={pageItemVariants}
             className={cn(
               'font-heading font-bold tracking-tight text-balance',
               hasQuery ? 'text-2xl sm:text-3xl' : 'text-4xl sm:text-6xl lg:text-7xl',
@@ -41,13 +44,15 @@ function HomePage() {
             ) : (
               'Mais Si ! Le film là !'
             )}
-          </h1>
+          </motion.h1>
           {!hasQuery && (
-            <p className="mt-4 text-lg text-muted-foreground sm:text-xl">Décris-le mal, on le trouve quand même.</p>
+            <motion.p variants={pageItemVariants} className="mt-4 text-lg text-muted-foreground sm:text-xl">
+              Décris-le mal, on le trouve quand même.
+            </motion.p>
           )}
         </header>
 
-        <div className="w-full max-w-3xl">
+        <motion.div variants={pageItemVariants} className="w-full max-w-3xl">
           <SearchBar
             query={q}
             mode={mode}
@@ -58,7 +63,7 @@ function HomePage() {
               void navigate({ search: { q: nextQuery, mode: nextMode } })
             }}
           />
-        </div>
+        </motion.div>
 
         {hasQuery && (
           <div className="w-full">

@@ -1,4 +1,6 @@
+import { motion } from 'motion/react'
 import { Skeleton } from '@/components/ui/skeleton'
+import { gridItemVariants } from '@/lib/motion'
 import type { MovieSummary } from '@/lib/tmdb/types'
 import { MovieCard } from './MovieCard'
 
@@ -7,10 +9,10 @@ const gridClassName = 'grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:g
 export function MovieGrid({ movies }: { movies: MovieSummary[] }) {
   return (
     <ul className={gridClassName}>
-      {movies.map((movie, index) => (
-        <li key={movie.id} className="animate-fade-up" style={{ animationDelay: `${Math.min(index, 12) * 30}ms` }}>
+      {movies.map((movie) => (
+        <motion.li key={movie.id} variants={gridItemVariants} className="relative hover:z-10 focus-within:z-10">
           <MovieCard movie={movie} />
-        </li>
+        </motion.li>
       ))}
     </ul>
   )
@@ -19,12 +21,13 @@ export function MovieGrid({ movies }: { movies: MovieSummary[] }) {
 export function MovieGridSkeleton() {
   return (
     <div className={gridClassName} role="status" aria-label="Chargement des films">
-      {Array.from({ length: 10 }, (_, index) => (
+      {Array.from({ length: 20 }, (_, index) => (
         <div key={index} className="glass overflow-hidden rounded-xl">
           <Skeleton className="aspect-2/3 rounded-none" />
-          <div className="space-y-2 p-3">
-            <Skeleton className="h-4 w-4/5" />
-            <Skeleton className="h-3 w-1/3" />
+          {/* Mêmes hauteurs que MovieCard : la grille ne saute pas à l'arrivée des résultats. */}
+          <div className="space-y-1 p-3">
+            <Skeleton className="h-5 w-4/5" />
+            <Skeleton className="h-4 w-1/3" />
           </div>
         </div>
       ))}
