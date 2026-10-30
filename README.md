@@ -1,32 +1,28 @@
-# React + TypeScript + Vite
+# Mais Si ! Le film là !
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+> Décris-le mal, on le trouve quand même.
 
-Currently, two official plugins are available:
+Application de recherche de films basée sur l'API TMDB, avec un mode Classique et un mode IA (interface seulement pour l'instant).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Démarrer
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```sh
+pnpm install
+cp .env.example .env   # renseigner VITE_TMDB_TOKEN (Read Access Token TMDB)
+pnpm dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Scripts
+
+- `pnpm dev` : serveur de développement
+- `pnpm build` : vérification des types et build de production dans `dist/`
+- `pnpm lint` : oxlint
+- `pnpm preview` : sert le build en local
+
+## Token TMDB
+
+Le token est lu depuis `VITE_TMDB_TOKEN`. Il ne doit jamais être commité, mais Vite l'inclut en clair dans le JS livré au navigateur : il est donc visible par les visiteurs du site déployé. Seul un proxy côté serveur permettrait de le masquer.
+
+---
+
+This website uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.
