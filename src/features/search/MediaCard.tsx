@@ -1,10 +1,10 @@
 import { createLink } from '@tanstack/react-router'
-import { Film, Star } from 'lucide-react'
+import { Film, Star, Tv } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useRef } from 'react'
-import { cardVariants, hoverSpring } from '@/lib/motion'
+import { cardVariants, hoverSpring, posterLayoutId } from '@/lib/motion'
 import { posterUrl } from '@/lib/tmdb/images'
-import type { MovieSummary } from '@/lib/tmdb/types'
+import type { MediaSummary } from '@/lib/tmdb/types'
 
 const MotionLink = createLink(motion.a)
 
@@ -17,17 +17,20 @@ function setCardRaised(poster: HTMLElement | null, raised: boolean) {
   if (card) card.style.zIndex = raised ? '20' : ''
 }
 
-export function MovieCard({ movie }: { movie: MovieSummary }) {
+export function MediaCard({ media }: { media: MediaSummary }) {
   const posterRef = useRef<HTMLDivElement>(null)
-  const poster = posterUrl(movie.poster_path)
-  const year = movie.release_date.slice(0, 4)
-  const rating = movie.vote_average > 0 ? ratingFormat.format(movie.vote_average) : null
+  const poster = posterUrl(media.poster_path)
+  const year = media.date.slice(0, 4)
+  const rating = media.vote_average > 0 ? ratingFormat.format(media.vote_average) : null
+  const layoutId = posterLayoutId(media.mediaType, media.id)
+  const isSeries = media.mediaType === 'tv'
+  const FallbackIcon = isSeries ? Tv : Film
 
   return (
     <MotionLink
-      to="/movie/$id"
-      params={{ id: String(movie.id) }}
-      state={{ posterPath: movie.poster_path }}
+      to={isSeries ? '/tv/$id' : '/movie/$id'}
+      params={{ id: String(media.id) }}
+      state={{ posterPath: media.poster_path }}
       variants={cardVariants}
       whileHover="hover"
       whileFocus="hover"
@@ -37,9 +40,9 @@ export function MovieCard({ movie }: { movie: MovieSummary }) {
     >
       {/* Pas d'overflow-hidden sur la carte : il couperait le poster pendant son vol au retour. */}
       <motion.div
-        layoutId={`poster-${movie.id}`}
+        layoutId={layoutId}
         layoutCrossfade={false}
-        data-poster={movie.id}
+        data-poster={layoutId}
         style={posterRadius}
         // Le poster en vol passe au-dessus des cartes voisines.
         onLayoutAnimationStart={() => setCardRaised(posterRef.current, true)}
@@ -57,14 +60,14 @@ export function MovieCard({ movie }: { movie: MovieSummary }) {
           />
         ) : (
           <div className="flex size-full items-center justify-center text-muted-foreground">
-            <Film className="size-10" aria-hidden="true" />
+            <FallbackIcon className="size-10" aria-hidden="true" />
           </div>
         )}
       </motion.div>
       <div className="flex flex-1 flex-col gap-1 p-3">
-        <h2 className="line-clamp-2 text-sm font-medium">{movie.title}</h2>
+        <h2 className="line-clamp-2 text-sm font-medium">{media.title}</h2>
         <div className="mt-auto flex items-center justify-between gap-2 text-xs text-muted-foreground">
-          <span>{year}</span>
+          <span>{[year, isSeries ? 'Série' : 'Film'].join(' · ')}</span>
           {rating && (
             <span className="flex items-center gap-1">
               <Star className="size-3 fill-primary text-primary" aria-hidden="true" />

@@ -1,6 +1,6 @@
 import type { Video } from '@/lib/tmdb/types'
 
-export function TrailerEmbed({ video, movieTitle }: { video: Video; movieTitle: string }) {
+export function TrailerEmbed({ video, title }: { video: Video; title: string }) {
   return (
     <section aria-labelledby="trailer-heading" className="space-y-3">
       <h2 id="trailer-heading" className="font-heading text-xl font-semibold">
@@ -10,7 +10,7 @@ export function TrailerEmbed({ video, movieTitle }: { video: Video; movieTitle: 
       <div className="glass aspect-video overflow-hidden rounded-2xl">
         <iframe
           src={`https://www.youtube-nocookie.com/embed/${video.key}`}
-          title={`Bande-annonce de ${movieTitle}`}
+          title={`Bande-annonce de ${title}`}
           loading="lazy"
           allow="encrypted-media; picture-in-picture; fullscreen"
           referrerPolicy="strict-origin-when-cross-origin"

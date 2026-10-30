@@ -2,7 +2,7 @@
 
 > Décris-le mal, on le trouve quand même.
 
-Application de recherche de films basée sur l'API TMDB, avec un mode Classique et un mode IA (interface seulement pour l'instant).
+Application de recherche de films et de séries basée sur l'API TMDB, avec un mode Classique et un mode IA (interface seulement pour l'instant).
 
 ## Démarrer
 

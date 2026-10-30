@@ -1,7 +1,7 @@
-import type { MovieSummary } from '@/lib/tmdb/types'
+import type { MediaSummary } from '@/lib/tmdb/types'
 
 export type AiSearchResult =
-  | { status: 'ok'; movies: MovieSummary[] }
+  | { status: 'ok'; results: MediaSummary[] }
   | { status: 'unavailable'; message: string }
 
 export type AiSearchFn = (description: string) => Promise<AiSearchResult>

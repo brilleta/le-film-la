@@ -85,8 +85,8 @@ export function SearchBar({ query, mode, onQueryChange, onModeChange }: SearchBa
                 type="search"
                 value={value}
                 onChange={handleClassicChange}
-                placeholder="Le titre du film…"
-                aria-label="Titre du film"
+                placeholder="Le titre du film ou de la série…"
+                aria-label="Titre du film ou de la série"
                 autoComplete="off"
                 enterKeyHint="search"
                 className="h-11 rounded-xl border-transparent bg-transparent pl-10 text-base md:text-base dark:bg-transparent"
@@ -99,7 +99,7 @@ export function SearchBar({ query, mode, onQueryChange, onModeChange }: SearchBa
                 onChange={(event) => setValue(event.target.value)}
                 onKeyDown={handleTextareaKeyDown}
                 placeholder="Mais si, le film avec…"
-                aria-label="Description libre du film"
+                aria-label="Description libre du film ou de la série"
                 aria-describedby="ai-search-hint"
                 rows={4}
                 className="min-h-28 flex-1 resize-y rounded-xl border-transparent bg-transparent text-base md:text-base dark:bg-transparent"

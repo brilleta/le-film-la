@@ -3,8 +3,8 @@ import { SearchX, Sparkles } from 'lucide-react'
 import { EmptyState } from '@/components/EmptyState'
 import { ErrorState } from '@/components/ErrorState'
 import { aiSearchOptions } from '@/services/ai-search'
-import { MovieGrid, MovieGridSkeleton } from './MovieGrid'
-import { moviesKey } from './moviesKey'
+import { MediaGrid, MediaGridSkeleton } from './MediaGrid'
+import { mediaListKey } from './mediaKey'
 import { ResultsTransition } from './ResultsTransition'
 
 export function AiResults({ description }: { description: string }) {
@@ -13,7 +13,7 @@ export function AiResults({ description }: { description: string }) {
   if (isPending) {
     return (
       <ResultsTransition stateKey="pending">
-        <MovieGridSkeleton />
+        <MediaGridSkeleton />
       </ResultsTransition>
     )
   }
@@ -30,16 +30,16 @@ export function AiResults({ description }: { description: string }) {
     return (
       <ResultsTransition stateKey="unavailable">
         <EmptyState icon={<Sparkles />} title={data.message}>
-          La recherche par description arrive. En attendant, le mode Classique trouve les films par leur titre.
+          La recherche par description arrive. En attendant, le mode Classique trouve les films et les séries par leur titre.
         </EmptyState>
       </ResultsTransition>
     )
   }
 
-  if (data.movies.length === 0) {
+  if (data.results.length === 0) {
     return (
       <ResultsTransition stateKey={`empty-${description}`}>
-        <EmptyState icon={<SearchX />} title="Aucun film trouvé">
+        <EmptyState icon={<SearchX />} title="Aucun résultat">
           Essaie d'ajouter des détails : une scène, un acteur, une époque…
         </EmptyState>
       </ResultsTransition>
@@ -47,9 +47,9 @@ export function AiResults({ description }: { description: string }) {
   }
 
   return (
-    <ResultsTransition stateKey={moviesKey(data.movies)}>
+    <ResultsTransition stateKey={mediaListKey(data.results)}>
       <section aria-label="Résultats de la recherche">
-        <MovieGrid movies={data.movies} />
+        <MediaGrid results={data.results} />
       </section>
     </ResultsTransition>
   )

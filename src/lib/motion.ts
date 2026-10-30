@@ -1,4 +1,5 @@
 import type { Transition, Variants } from 'motion/react'
+import type { MediaType } from '@/lib/tmdb/types'
 
 // Durées en secondes : tout le style d'animation de l'appli se règle ici.
 export const durations = { fast: 0.2, base: 0.3, slow: 0.4 }
@@ -10,6 +11,9 @@ export const defaultTransition: Transition = { duration: durations.base, ease: e
 
 export const hoverSpring: Transition = { type: 'spring', stiffness: 400, damping: 25 }
 export const indicatorSpring: Transition = { type: 'spring', stiffness: 500, damping: 35 }
+
+/** Relie le poster d'une carte à celui de sa page détail. */
+export const posterLayoutId = (mediaType: MediaType, id: number) => `poster-${mediaType}-${id}`
 
 export function prefersReducedMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
