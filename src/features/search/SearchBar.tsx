@@ -4,6 +4,8 @@ import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type Key
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { AiAccessGate } from './AiAccessGate'
+import { useAiAccess } from './aiAccess'
 import { ModeSwitch } from './ModeSwitch'
 import type { SearchMode } from './searchParams'
 import { useAnimatedHeight } from './useAnimatedHeight'
@@ -24,7 +26,9 @@ export function SearchBar({ query, mode, onQueryChange, onModeChange }: SearchBa
   // Dernière valeur envoyée à l'URL : tout autre changement vient de la navigation (retour arrière…).
   const lastSent = useRef(query)
   const debounceTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
-  const bodyRef = useAnimatedHeight<HTMLDivElement>(mode)
+  const aiAccess = useAiAccess()
+  const aiLocked = mode === 'ai' && aiAccess !== 'granted'
+  const bodyRef = useAnimatedHeight<HTMLDivElement>(mode === 'ai' ? `ai-${aiAccess}` : mode)
 
   useEffect(() => {
     if (query !== lastSent.current) {
@@ -93,6 +97,8 @@ export function SearchBar({ query, mode, onQueryChange, onModeChange }: SearchBa
                 className="h-11 rounded-xl border-transparent bg-transparent pl-10 text-base md:text-base dark:bg-transparent"
               />
             </motion.div>
+          ) : aiAccess !== 'granted' ? (
+            <AiAccessGate state={aiAccess} />
           ) : (
             <motion.div key="ai" initial={fieldFade.initial} animate={fieldFade.animate} className="flex flex-1">
               <Textarea
@@ -110,7 +116,7 @@ export function SearchBar({ query, mode, onQueryChange, onModeChange }: SearchBa
           )}
           <ModeSwitch mode={mode} onChange={handleModeChange} />
         </div>
-        {mode === 'ai' && (
+        {mode === 'ai' && !aiLocked && (
           <div className="flex items-center justify-between gap-3 px-2 pb-1">
             <p id="ai-search-hint" className="text-xs text-muted-foreground">
               Entrée pour lancer, Maj + Entrée pour aller à la ligne.

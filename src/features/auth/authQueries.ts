@@ -1,4 +1,4 @@
-import { queryOptions, useMutation, useQueryClient } from '@tanstack/react-query'
+import { queryOptions, useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { ApiError, apiFetch } from '@/lib/api'
 import type { LoginInput, RegisterInput } from './schemas'
@@ -20,6 +20,15 @@ export const currentUserOptions = () =>
     },
   })
 
+/**
+ * Données propres à un compte : supprimées quand l'utilisateur change, pour qu'un autre
+ * compte du même navigateur ne les voie pas (la recherche IA est gardée sans limite).
+ */
+function clearUserScopedQueries(queryClient: QueryClient) {
+  queryClient.removeQueries({ queryKey: ['ai-search'] })
+  queryClient.removeQueries({ queryKey: ['admin'] })
+}
+
 /** Les mutations d'auth gèrent elles-mêmes leurs 401 (identifiants invalides). */
 export const authMutationKey = ['auth'] as const
 
@@ -35,7 +44,10 @@ export function useLogin() {
   return useMutation({
     mutationKey: [...authMutationKey, 'login'],
     mutationFn: (input: LoginInput) => postJson<User>('/api/auth/login', input),
-    onSuccess: (user) => queryClient.setQueryData(currentUserKey, user),
+    onSuccess: (user) => {
+      clearUserScopedQueries(queryClient)
+      queryClient.setQueryData(currentUserKey, user)
+    },
   })
 }
 
@@ -44,7 +56,10 @@ export function useRegister() {
   return useMutation({
     mutationKey: [...authMutationKey, 'register'],
     mutationFn: (input: RegisterInput) => postJson<User>('/api/auth/register', input),
-    onSuccess: (user) => queryClient.setQueryData(currentUserKey, user),
+    onSuccess: (user) => {
+      clearUserScopedQueries(queryClient)
+      queryClient.setQueryData(currentUserKey, user)
+    },
   })
 }
 
@@ -55,6 +70,7 @@ export function useLogout() {
     mutationKey: [...authMutationKey, 'logout'],
     mutationFn: () => apiFetch<void>('/api/auth/logout', { method: 'POST' }),
     onSuccess: async () => {
+      clearUserScopedQueries(queryClient)
       queryClient.setQueryData(currentUserKey, null)
       const onProtectedPage = router.state.matches.some((match) => match.routeId.startsWith('/_authenticated'))
       if (onProtectedPage) await router.navigate({ to: '/', search: { q: '', mode: 'classic' } })

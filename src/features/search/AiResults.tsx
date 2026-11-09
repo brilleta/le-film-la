@@ -3,11 +3,18 @@ import { SearchX, Sparkles } from 'lucide-react'
 import { EmptyState } from '@/components/EmptyState'
 import { ErrorState } from '@/components/ErrorState'
 import { aiSearchOptions } from '@/services/aiSearch'
+import { useAiAccess } from './aiAccess'
 import { MediaGrid, MediaGridSkeleton } from './MediaGrid'
 import { mediaListKey } from './mediaKey'
 import { ResultsTransition } from './ResultsTransition'
 
 export function AiResults({ description }: { description: string }) {
+  // Sans accès, c'est le panneau de la barre de recherche qui explique pourquoi.
+  if (useAiAccess() !== 'granted') return null
+  return <GrantedAiResults description={description} />
+}
+
+function GrantedAiResults({ description }: { description: string }) {
   const { data, error, isFetching, isPending, refetch } = useQuery(aiSearchOptions(description))
 
   // Un nouvel essai après une erreur prend aussi plusieurs secondes : le chargement remplace le message d'erreur.

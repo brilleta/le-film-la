@@ -1,7 +1,13 @@
+export type Role = 'USER' | 'ADMIN'
+
+export type AiAccess = 'NONE' | 'PENDING' | 'GRANTED' | 'REJECTED'
+
 export interface User {
-  id: number
+  id: string
   email: string
   username: string
+  role: Role
+  aiAccess: AiAccess
 }
 
 /** Exposé dans le contexte du routeur pour les gardes de route. */

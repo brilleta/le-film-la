@@ -7,7 +7,7 @@ Le back Spring Boot est dans un repo séparé. Déploiement : Docker (nginx) sur
 ## Stack
 - Vite + React + TypeScript strict, pnpm
 - Tailwind + shadcn/ui, Motion (`motion/react`)
-- TanStack Router (file-based, search params validés par Zod), TanStack Query, TanStack Form (+ Zod)
+- TanStack Router (file-based, search params validés par Zod), TanStack Query, TanStack Form (+ Zod), TanStack Table v9 (`useTable` + `tableFeatures`, pas `useReactTable`), toasts `sonner`
 
 ## Commandes
 - `pnpm dev` (proxy `/api` → `http://localhost:8080`) / `pnpm build` / `pnpm lint`
@@ -16,7 +16,7 @@ Le back Spring Boot est dans un repo séparé. Déploiement : Docker (nginx) sur
 ## Structure
 - `src/routes/` : routes TanStack Router (ne jamais modifier `routeTree.gen.ts`, il est généré)
 - `src/components/ui/` : composants shadcn (ne pas réécrire, ajouter via la CLI shadcn)
-- `src/components/` : composants partagés ; `src/features/` : composants et logique par fonctionnalité (`search`, `media`)
+- `src/components/` : composants partagés ; `src/features/` : composants et logique par fonctionnalité (`search`, `media`, `auth`, `admin`)
 - `src/lib/api.ts` : client typé du back + `queryOptions` (CSRF géré dans `apiFetch`)
 - `src/features/auth/` : query `/me`, mutations login/register/logout, schémas Zod, formulaires, gestion des 401
 - `src/lib/tmdb/` : types du JSON TMDB relayé tel quel par le back, conversion vers `MediaSummary`/`MediaDetails`, URLs d'images
@@ -26,12 +26,17 @@ Le back Spring Boot est dans un repo séparé. Déploiement : Docker (nginx) sur
 
 ## Contrat d'API du back
 - `GET /api/movies/search?q=` / `GET /api/movies/{type}/{id}` (type = `movie` | `tv`) / `GET /api/trending`
-- `POST /api/ai/search` `{ "description" }` → `{ "results": [{ "tmdbId", "type", "title", "year", "posterPath", "voteAverage", "reason" }] }`
+- `POST /api/ai/search` `{ "description" }` (connecté + `aiAccess = GRANTED`, sinon 401 ou 403 `AI_ACCESS_REQUIRED`) → `{ "results": [{ "tmdbId", "type", "title", "year", "posterPath", "voteAverage", "reason" }] }`
 - Erreurs : `{ "error", "message" }` (dont dépassement de la limite de requêtes)
 - Auth (JWT en cookie httpOnly, jamais lu par le front) :
   - `POST /api/auth/register` `{ email, username, password }` → 201 + utilisateur ; `POST /api/auth/login` `{ email, password }` → 200 + utilisateur
-  - `POST /api/auth/logout` → 204 sans corps ; `GET /api/auth/me` → `{ id, email, username }` ou 401 (= non connecté)
+  - `POST /api/auth/logout` → 204 sans corps ; `GET /api/auth/me` → `{ id, email, username, role, aiAccess }` ou 401 (= non connecté)
   - Règles : email valide, pseudo 3-30 caractères, mot de passe 8 minimum ; 429 si trop de tentatives
+- Accès IA : `POST /api/ai/access-request` (409 si déjà en attente ou accordé)
+- Admin (`role = ADMIN`) :
+  - `GET /api/admin/users?aiAccess=&q=&page=&size=` → `{ content: AdminUser[], page, size, totalElements, totalPages }` (`page` à partir de 0, `size` 1-100, 20 par défaut)
+  - `POST /api/admin/users/{id}/ai-access/grant|reject|revoke` → 200 + `AdminUser` ; erreurs 404 `NOT_FOUND`, 409 `INVALID_AI_ACCESS_TRANSITION` / `CONCURRENT_MODIFICATION`, 403 `SELF_ACCESS_CHANGE`
+  - Compteur des demandes : `?aiAccess=PENDING&size=1` puis `totalElements`
 - Aucun appel direct à TMDB ni aucune clé dans le front ; seules les images viennent de image.tmdb.org
 
 ## Auth et CSRF
@@ -40,6 +45,9 @@ Le back Spring Boot est dans un repo séparé. Déploiement : Docker (nginx) sur
 - Un 401 hors mutations d'auth (clé `['auth', …]`) remet l'utilisateur à `null` et redirige vers `/login?redirect=…` (`QueryCache`/`MutationCache` dans `src/router.ts`).
 - Contexte du routeur : `{ queryClient, auth }` ; `auth.ensureUser()` attend `/me` (pas de redirection prématurée).
 - Routes protégées : sous `src/routes/_authenticated/` (le layout redirige vers `/login?redirect=<href>` et ajoute `user` au contexte). `/login` et `/register` sont sous `_guest/` (déjà connecté → accueil).
+- Statuts IA : `NONE` → (demande) `PENDING` → `GRANTED` (grant) ou `REJECTED` (reject, l'utilisateur peut redemander) ; `revoke` : `GRANTED` → `NONE`. Seul `aiAccess === 'GRANTED'` ouvre la recherche IA (rôle admin compris) : `useAiAccess()` + `AiAccessGate` dans la barre de recherche. Un 403 `AI_ACCESS_REQUIRED` invalide `/me`.
+- `/admin` (sous `_authenticated`) : redirige vers l'accueil si `role !== 'ADMIN'` ; filtre `status` (`PENDING` par défaut), `q` et `page` dans les search params ; après une action, invalidation de `['admin', 'users']` (liste + compteur).
+- Login, register et logout suppriment les queries propres au compte (`['ai-search']`, `['admin']`).
 - Le search param `redirect` n'accepte que des chemins internes (`redirectSearchSchema`).
 
 ## Conventions
