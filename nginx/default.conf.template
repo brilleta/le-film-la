@@ -17,6 +17,8 @@ server {
         proxy_set_header Host $proxy_host;
         # Le back limite la recherche IA par IP : il doit voir celle du visiteur.
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        # Schéma d'origine transmis par Traefik (Coolify), vide en accès direct.
+        proxy_set_header X-Forwarded-Proto $http_x_forwarded_proto;
         proxy_ssl_server_name on;
         # La recherche IA peut attendre 30 s, plus un nouvel essai, puis TMDB.
         proxy_read_timeout 90s;

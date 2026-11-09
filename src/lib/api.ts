@@ -4,11 +4,14 @@ import type { MediaDetails, MediaType, PagedResponse, TmdbMovieDetails, TmdbSear
 
 export class ApiError extends Error {
   readonly status: number
+  /** Champ `error` du back, quand il est présent. */
+  readonly code: string | null
 
-  constructor(message: string, status: number) {
+  constructor(message: string, status: number, code: string | null = null) {
     super(message)
     this.name = 'ApiError'
     this.status = status
+    this.code = code
   }
 
   get isRetryable() {
@@ -16,26 +19,44 @@ export class ApiError extends Error {
   }
 }
 
-export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const response = await fetch(path, {
-    ...init,
-    headers: { Accept: 'application/json', ...init.headers },
-  })
+const UNSAFE_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 
-  if (!response.ok) {
-    throw new ApiError(await errorMessage(response), response.status)
+/** Relu à chaque requête : le back change le jeton après register, login et logout. */
+function readXsrfToken() {
+  const cookie = document.cookie.split('; ').find((entry) => entry.startsWith('XSRF-TOKEN='))
+  return cookie ? decodeURIComponent(cookie.slice('XSRF-TOKEN='.length)) : null
+}
+
+export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const headers = new Headers(init.headers)
+  headers.set('Accept', 'application/json')
+  if (UNSAFE_METHODS.has((init.method ?? 'GET').toUpperCase())) {
+    const xsrfToken = readXsrfToken()
+    if (xsrfToken) headers.set('X-XSRF-TOKEN', xsrfToken)
   }
 
-  return response.json() as Promise<T>
+  const response = await fetch(path, { ...init, headers, credentials: 'same-origin' })
+
+  if (!response.ok) {
+    const { message, code } = await errorBody(response)
+    throw new ApiError(message, response.status, code)
+  }
+
+  // Logout répond 204 sans corps.
+  const text = await response.text()
+  return (text ? JSON.parse(text) : undefined) as T
 }
 
 /** Le back répond `{ error, message }` ; un proxy en panne peut renvoyer autre chose que du JSON. */
-async function errorMessage(response: Response) {
+async function errorBody(response: Response) {
   const body: unknown = await response.json().catch(() => null)
-  if (typeof body === 'object' && body !== null && 'message' in body && typeof body.message === 'string') {
-    return body.message
-  }
-  return 'Le service ne répond pas correctement. Réessaie dans un instant.'
+  const isObject = typeof body === 'object' && body !== null
+  const message =
+    isObject && 'message' in body && typeof body.message === 'string'
+      ? body.message
+      : 'Le service ne répond pas correctement. Réessaie dans un instant.'
+  const code = isObject && 'error' in body && typeof body.error === 'string' ? body.error : null
+  return { message, code }
 }
 
 export const trendingOptions = () =>
