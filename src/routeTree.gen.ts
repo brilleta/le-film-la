@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as GuestRouteImport } from './routes/_guest'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as GuestLoginRouteImport } from './routes/_guest/login'
 import { Route as GuestRegisterRouteImport } from './routes/_guest/register'
 import { Route as MovieIdRouteImport } from './routes/movie.$id'
@@ -34,6 +35,11 @@ const GuestRoute = GuestRouteImport.update({
 const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   id: '/account',
   path: '/account',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const GuestLoginRoute = GuestLoginRouteImport.update({
@@ -60,6 +66,7 @@ const TvIdRoute = TvIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/login': typeof GuestLoginRoute
   '/register': typeof GuestRegisterRoute
   '/movie/$id': typeof MovieIdRoute
@@ -68,6 +75,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/login': typeof GuestLoginRoute
   '/register': typeof GuestRegisterRoute
   '/movie/$id': typeof MovieIdRoute
@@ -79,6 +87,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/_guest': typeof GuestRouteWithChildren
   '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_guest/login': typeof GuestLoginRoute
   '/_guest/register': typeof GuestRegisterRoute
   '/movie/$id': typeof MovieIdRoute
@@ -87,15 +96,29 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/account' | '/login' | '/register' | '/movie/$id' | '/tv/$id'
+    | '/'
+    | '/account'
+    | '/admin'
+    | '/login'
+    | '/register'
+    | '/movie/$id'
+    | '/tv/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/account' | '/login' | '/register' | '/movie/$id' | '/tv/$id'
+  to:
+    | '/'
+    | '/account'
+    | '/admin'
+    | '/login'
+    | '/register'
+    | '/movie/$id'
+    | '/tv/$id'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/_guest'
     | '/_authenticated/account'
+    | '/_authenticated/admin'
     | '/_guest/login'
     | '/_guest/register'
     | '/movie/$id'
@@ -140,6 +163,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_guest/login': {
       id: '/_guest/login'
       path: '/login'
@@ -173,10 +203,12 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

@@ -5,6 +5,7 @@ import { AppHeader } from '@/components/AppHeader'
 import { Footer } from '@/components/Footer'
 import { NotFound } from '@/components/NotFound'
 import { PageTransition } from '@/components/PageTransition'
+import { Toaster } from '@/components/ui/sonner'
 import type { AuthContext } from '@/features/auth/types'
 import { defaultTransition } from '@/lib/motion'
 
@@ -28,6 +29,7 @@ function RootLayout() {
           <PageTransition />
         </main>
         <Footer />
+        <Toaster theme="dark" position="bottom-center" />
       </div>
     </MotionConfig>
   )
