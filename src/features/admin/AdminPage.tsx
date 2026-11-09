@@ -50,9 +50,9 @@ export function AdminPage() {
           value={search.status}
           onValueChange={(value) => void navigate({ search: (prev) => ({ ...prev, status: value as AiAccessFilter, page: 0 }) })}
         >
-          <TabsList className="glass max-w-full justify-start overflow-x-auto rounded-xl group-data-horizontal/tabs:h-10">
+          <TabsList className="glass max-w-full flex-wrap justify-start rounded-xl group-data-horizontal/tabs:h-auto">
             {AI_ACCESS_FILTERS.map((filter) => (
-              <TabsTrigger key={filter} value={filter} className="flex-none rounded-lg px-3">
+              <TabsTrigger key={filter} value={filter} className="h-8 flex-none rounded-lg px-3">
                 {filterLabels[filter]}
                 {filter === 'PENDING' && !!pendingCount && (
                   <Badge className="h-4.5 min-w-4.5 px-1 text-[0.7rem]" aria-label={`${pendingCount} en attente`}>
