@@ -1,9 +1,19 @@
-import { QueryClient } from '@tanstack/react-query'
+import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query'
 import { createRouter, parseSearchWith, stringifySearchWith } from '@tanstack/react-router'
+import { authMutationKey, currentUserOptions } from '@/features/auth/authQueries'
+import { handleUnauthorized } from '@/features/auth/handleUnauthorized'
+import type { AuthContext } from '@/features/auth/types'
 import { ApiError } from '@/lib/api'
 import { routeTree } from './routeTree.gen'
 
 export const queryClient = new QueryClient({
+  queryCache: new QueryCache({ onError: (error) => handleUnauthorized(error, queryClient, router) }),
+  mutationCache: new MutationCache({
+    onError: (error, _variables, _context, mutation) => {
+      const isAuthMutation = mutation.options.mutationKey?.[0] === authMutationKey[0]
+      if (!isAuthMutation) handleUnauthorized(error, queryClient, router)
+    },
+  }),
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000,
@@ -13,11 +23,15 @@ export const queryClient = new QueryClient({
   },
 })
 
+const auth: AuthContext = {
+  ensureUser: () => queryClient.ensureQueryData({ ...currentUserOptions(), revalidateIfStale: true }),
+}
+
 const keepRawValue = (value: string) => value
 
 export const router = createRouter({
   routeTree,
-  context: { queryClient },
+  context: { queryClient, auth },
   defaultPreload: 'intent',
   defaultPreloadStaleTime: 0,
   scrollRestoration: true,

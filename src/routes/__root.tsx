@@ -1,12 +1,14 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { createRootRouteWithContext } from '@tanstack/react-router'
 import { MotionConfig } from 'motion/react'
+import { AppHeader } from '@/components/AppHeader'
 import { Footer } from '@/components/Footer'
 import { NotFound } from '@/components/NotFound'
 import { PageTransition } from '@/components/PageTransition'
+import type { AuthContext } from '@/features/auth/types'
 import { defaultTransition } from '@/lib/motion'
 
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient; auth: AuthContext }>()({
   component: RootLayout,
   notFoundComponent: NotFound,
 })
@@ -21,6 +23,7 @@ function RootLayout() {
         >
           Aller au contenu
         </a>
+        <AppHeader />
         <main id="main" className="flex flex-1 flex-col">
           <PageTransition />
         </main>
