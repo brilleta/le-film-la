@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, useLocation } from '@tanstack/react-router'
-import { ChevronDown, LogOut, ShieldCheck, UserRound } from 'lucide-react'
+import { Activity, ChevronDown, LogOut, ShieldCheck, UserRound } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -86,6 +86,14 @@ function UserMenu({ user }: { user: User }) {
                   {pendingCount}
                 </Badge>
               )}
+            </Link>
+          </DropdownMenuItem>
+        )}
+        {isAdmin && (
+          <DropdownMenuItem asChild>
+            <Link to="/admin/stats" search={{ minutes: 15 }}>
+              <Activity aria-hidden="true" />
+              Statistiques en direct
             </Link>
           </DropdownMenuItem>
         )}

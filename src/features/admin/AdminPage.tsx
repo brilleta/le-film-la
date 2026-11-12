@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { pageItemVariants } from '@/lib/motion'
+import { AdminNav } from './AdminNav'
 import { adminUsersOptions, pendingCountOptions, useAiAccessAction } from './adminQueries'
 import { AiAccessHistorySheet } from './AiAccessHistorySheet'
 import { AI_ACCESS_FILTERS, aiAccessLabels, type AiAccessFilter } from './searchParams'
@@ -49,9 +50,12 @@ export function AdminPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8">
-      <motion.header variants={pageItemVariants} className="space-y-1">
-        <h1 className="font-heading text-3xl font-bold tracking-tight">Administration</h1>
-        <p className="text-sm text-muted-foreground">Qui a droit à la boule de cristal ?</p>
+      <motion.header variants={pageItemVariants} className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div className="space-y-1">
+          <h1 className="font-heading text-3xl font-bold tracking-tight">Administration</h1>
+          <p className="text-sm text-muted-foreground">Qui a droit à la boule de cristal ?</p>
+        </div>
+        <AdminNav />
       </motion.header>
 
       <motion.div variants={pageItemVariants} className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
