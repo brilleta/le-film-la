@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { ChevronLeft, ChevronRight, Search, Users } from 'lucide-react'
 import { motion } from 'motion/react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { EmptyState } from '@/components/EmptyState'
 import { ErrorState } from '@/components/ErrorState'
 import { Badge } from '@/components/ui/badge'
@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { pageItemVariants } from '@/lib/motion'
 import { adminUsersOptions, pendingCountOptions, useAiAccessAction } from './adminQueries'
+import { AiAccessHistorySheet } from './AiAccessHistorySheet'
 import { AI_ACCESS_FILTERS, aiAccessLabels, type AiAccessFilter } from './searchParams'
 import type { AdminUser, AiAccessAction } from './types'
 import { UsersTable } from './UsersTable'
@@ -35,6 +36,14 @@ export function AdminPage() {
     (target: AdminUser, kind: AiAccessAction) => mutate({ user: target, action: kind }),
     [mutate],
   )
+
+  // Panneau d'historique : on garde la dernière version connue de l'utilisateur si sa ligne quitte le filtre courant.
+  const [historyUser, setHistoryUser] = useState<AdminUser | null>(null)
+  const currentHistoryUser = useMemo(() => {
+    if (!historyUser) return null
+    return users.data?.content.find((candidate) => candidate.id === historyUser.id) ?? historyUser
+  }, [historyUser, users.data])
+  const closeHistory = useCallback(() => setHistoryUser(null), [])
 
   const totalPages = users.data?.totalPages ?? 0
 
@@ -89,10 +98,13 @@ export function AdminPage() {
               currentUserId={user.id}
               pendingUserId={actionPending ? variables?.user.id : undefined}
               onAction={handleAction}
+              onShowHistory={setHistoryUser}
             />
           </div>
         )}
       </motion.section>
+
+      <AiAccessHistorySheet user={currentHistoryUser} onClose={closeHistory} />
 
       {totalPages > 1 && (
         <nav aria-label="Pagination" className="flex items-center justify-end gap-3 text-sm text-muted-foreground">

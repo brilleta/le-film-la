@@ -23,3 +23,15 @@ export interface AdminUsersPage {
 }
 
 export type AiAccessAction = 'grant' | 'reject' | 'revoke'
+
+export type AiAccessEventType = 'REQUESTED' | 'GRANTED' | 'REJECTED' | 'REVOKED'
+
+/** Entrée de `GET /api/admin/users/{id}/ai-access/history`, alimentée par Kafka (cohérence à terme). */
+export interface AiAccessHistoryEntry {
+  eventId: string
+  type: AiAccessEventType
+  previousStatus: AiAccess
+  newStatus: AiAccess
+  decidedBy: { id: string; username: string } | null
+  occurredAt: string
+}

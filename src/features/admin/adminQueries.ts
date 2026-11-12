@@ -3,7 +3,7 @@ import { toast } from 'sonner'
 import { currentUserKey } from '@/features/auth/authQueries'
 import { ApiError, apiFetch } from '@/lib/api'
 import type { AdminSearch } from './searchParams'
-import type { AdminUser, AdminUsersPage, AiAccessAction } from './types'
+import type { AdminUser, AdminUsersPage, AiAccessAction, AiAccessHistoryEntry } from './types'
 
 export const PAGE_SIZE = 20
 
@@ -37,6 +37,34 @@ export const pendingCountOptions = () =>
       (await apiFetch<AdminUsersPage>(usersUrl({ aiAccess: 'PENDING', size: 1 }), { signal })).totalElements,
     staleTime: 30 * 1000,
     refetchInterval: 60 * 1000,
+  })
+
+const historyKey = (userId: string) => [...adminUsersKey, 'history', userId] as const
+
+/** Bornes du rattrapage : l'historique arrive par Kafka quelques ms après la réponse HTTP. */
+const HISTORY_CATCH_UP_MS = 1000
+const HISTORY_CATCH_UP_MAX_FETCHES = 8
+
+/** L'historique est « en retard » tant que sa dernière entrée ne reflète pas le statut courant de l'utilisateur. */
+export function historyIsBehind(history: AiAccessHistoryEntry[] | undefined, user: AdminUser) {
+  if (!history) return false
+  const latest = history[0]
+  // Comptes décidés avant la mise en place de l'historique : rien à rattraper, il n'y aura jamais d'entrée.
+  if (!latest) return user.aiAccessRequestedAt !== null && user.aiAccess === 'PENDING'
+  return latest.newStatus !== user.aiAccess
+}
+
+export const aiAccessHistoryOptions = (user: AdminUser) =>
+  queryOptions({
+    queryKey: historyKey(user.id),
+    queryFn: ({ signal }) =>
+      apiFetch<AiAccessHistoryEntry[]>(`/api/admin/users/${encodeURIComponent(user.id)}/ai-access/history`, { signal }),
+    staleTime: 0,
+    // Tant que l'historique n'a pas rattrapé le statut affiché, on le relit à intervalle court, un nombre borné de fois.
+    refetchInterval: (query) =>
+      historyIsBehind(query.state.data, user) && query.state.dataUpdateCount < HISTORY_CATCH_UP_MAX_FETCHES
+        ? HISTORY_CATCH_UP_MS
+        : false,
   })
 
 const successMessages: Record<AiAccessAction, (username: string) => string> = {

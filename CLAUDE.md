@@ -37,6 +37,7 @@ Le back Spring Boot est dans un repo séparé. Déploiement : Render Static Site
   - `GET /api/admin/users?aiAccess=&q=&page=&size=` → `{ content: AdminUser[], page, size, totalElements, totalPages }` (`page` à partir de 0, `size` 1-100, 20 par défaut)
   - `POST /api/admin/users/{id}/ai-access/grant|reject|revoke` → 200 + `AdminUser` ; erreurs 404 `NOT_FOUND`, 409 `INVALID_AI_ACCESS_TRANSITION` / `CONCURRENT_MODIFICATION`, 403 `SELF_ACCESS_CHANGE`
   - Compteur des demandes : `?aiAccess=PENDING&size=1` puis `totalElements`
+  - `GET /api/admin/users/{id}/ai-access/history` → `[{ eventId, type: 'REQUESTED'|'GRANTED'|'REJECTED'|'REVOKED', previousStatus, newStatus, decidedBy: { id, username } | null, occurredAt }]`, le plus récent d'abord ; 404 `NOT_FOUND`. Alimenté par Kafka côté back : cohérence à terme (quelques ms après une action)
 - Aucun appel direct à TMDB ni aucune clé dans le front ; seules les images viennent de image.tmdb.org
 
 ## Auth et CSRF
@@ -46,7 +47,8 @@ Le back Spring Boot est dans un repo séparé. Déploiement : Render Static Site
 - Contexte du routeur : `{ queryClient, auth }` ; `auth.ensureUser()` attend `/me` (pas de redirection prématurée).
 - Routes protégées : sous `src/routes/_authenticated/` (le layout redirige vers `/login?redirect=<href>` et ajoute `user` au contexte). `/login` et `/register` sont sous `_guest/` (déjà connecté → accueil).
 - Statuts IA : `NONE` → (demande) `PENDING` → `GRANTED` (grant) ou `REJECTED` (reject, l'utilisateur peut redemander) ; `revoke` : `GRANTED` → `NONE`. Seul `aiAccess === 'GRANTED'` ouvre la recherche IA (rôle admin compris) : `useAiAccess()` + `AiAccessGate` dans la barre de recherche. Un 403 `AI_ACCESS_REQUIRED` invalide `/me`.
-- `/admin` (sous `_authenticated`) : redirige vers l'accueil si `role !== 'ADMIN'` ; filtre `status` (`PENDING` par défaut), `q` et `page` dans les search params ; après une action, invalidation de `['admin', 'users']` (liste + compteur).
+- `/admin` (sous `_authenticated`) : redirige vers l'accueil si `role !== 'ADMIN'` ; filtre `status` (`PENDING` par défaut), `q` et `page` dans les search params ; après une action, invalidation de `['admin', 'users']` (liste + compteur + historiques).
+- Historique d'accès IA : `AiAccessHistorySheet` (shadcn `Sheet`, bouton dans la colonne actions), query `['admin', 'users', 'history', userId]`. Tant que `historyIsBehind` (dernière entrée ≠ statut courant), refetch toutes les secondes, 8 fois max : le back écrit l'historique via Kafka après la réponse HTTP.
 - Login, register et logout suppriment les queries propres au compte (`['ai-search']`, `['admin']`).
 - Le search param `redirect` n'accepte que des chemins internes (`redirectSearchSchema`).
 
