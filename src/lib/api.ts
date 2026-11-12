@@ -1,7 +1,6 @@
 import { keepPreviousData, queryOptions } from '@tanstack/react-query'
 import { movieDetails, searchResultsToMedia, tvDetails } from '@/lib/tmdb/media'
 import type { MediaDetails, MediaType, PagedResponse, TmdbMovieDetails, TmdbSearchResult, TmdbTvDetails } from '@/lib/tmdb/types'
-import { searchSessionHeaders } from '@/lib/searchSession'
 
 export class ApiError extends Error {
   readonly status: number
@@ -75,10 +74,7 @@ export const searchMediaOptions = (query: string) =>
     queryKey: ['media', 'search', query],
     queryFn: async ({ signal }) => {
       const params = new URLSearchParams({ q: query })
-      const response = await apiFetch<PagedResponse<TmdbSearchResult>>(`/api/movies/search?${params}`, {
-        signal,
-        headers: searchSessionHeaders(),
-      })
+      const response = await apiFetch<PagedResponse<TmdbSearchResult>>(`/api/movies/search?${params}`, { signal })
       return { ...response, results: searchResultsToMedia(response.results) }
     },
     enabled: query.length > 0,

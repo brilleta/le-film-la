@@ -1,6 +1,5 @@
 import { queryOptions } from '@tanstack/react-query'
 import { apiFetch } from '@/lib/api'
-import { searchSessionHeaders } from '@/lib/searchSession'
 import type { MediaSummary, MediaType } from '@/lib/tmdb/types'
 
 interface AiSearchResponse {
@@ -18,7 +17,7 @@ interface AiSearchResponse {
 export async function aiSearch(description: string): Promise<MediaSummary[]> {
   const { results } = await apiFetch<AiSearchResponse>('/api/ai/search', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...searchSessionHeaders() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ description }),
   })
 
