@@ -1,6 +1,8 @@
 import { createColumnHelper, tableFeatures, useTable } from '@tanstack/react-table'
+import { History } from 'lucide-react'
 import { useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { AiAccessBadge } from './AiAccessBadge'
 import type { AdminUser, AiAccessAction } from './types'
@@ -18,9 +20,10 @@ interface UsersTableProps {
   currentUserId: string | undefined
   pendingUserId: string | undefined
   onAction: (user: AdminUser, action: AiAccessAction) => void
+  onShowHistory: (user: AdminUser) => void
 }
 
-export function UsersTable({ users, currentUserId, pendingUserId, onAction }: UsersTableProps) {
+export function UsersTable({ users, currentUserId, pendingUserId, onAction, onShowHistory }: UsersTableProps) {
   const columns = useMemo(
     () =>
       column.columns([
@@ -64,16 +67,27 @@ export function UsersTable({ users, currentUserId, pendingUserId, onAction }: Us
         id: 'actions',
         header: () => <span className="sr-only">Actions</span>,
         cell: ({ row }) => (
-          <UserActions
-            user={row.original}
-            isSelf={row.original.id === currentUserId}
-            pending={row.original.id === pendingUserId}
-            onAction={(action) => onAction(row.original, action)}
-          />
+          <div className="flex items-center justify-end gap-1.5">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => onShowHistory(row.original)}
+              aria-label={`Historique des accès IA de ${row.original.username}`}
+              title="Historique"
+            >
+              <History aria-hidden="true" />
+            </Button>
+            <UserActions
+              user={row.original}
+              isSelf={row.original.id === currentUserId}
+              pending={row.original.id === pendingUserId}
+              onAction={(action) => onAction(row.original, action)}
+            />
+          </div>
         ),
       }),
     ]),
-    [currentUserId, pendingUserId, onAction],
+    [currentUserId, pendingUserId, onAction, onShowHistory],
   )
 
   const table = useTable({ features, columns, data: users, getRowId: (user) => user.id })
