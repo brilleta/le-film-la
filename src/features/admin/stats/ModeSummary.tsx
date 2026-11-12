@@ -7,7 +7,12 @@ export function ModeSummary({ mode, stats }: { mode: SearchMode; stats: ModeStat
   const meta = modeMeta[mode]
   const empty = stats.searches === 0
   const tiles = [
-    { label: 'Recherches', value: formatCount(stats.searches), detail: null },
+    {
+      label: 'Recherches',
+      value: formatCount(stats.intents),
+      // Une recherche part à chaque pause de frappe : plusieurs requêtes pour une seule recherche
+      detail: empty ? null : `${formatCount(stats.searches)} requête${stats.searches > 1 ? 's' : ''}`,
+    },
     {
       label: 'Latence moyenne',
       value: empty ? '—' : formatLatency(stats.avgLatencyMs),
