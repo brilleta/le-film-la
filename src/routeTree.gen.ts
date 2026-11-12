@@ -18,6 +18,7 @@ import { Route as GuestLoginRouteImport } from './routes/_guest/login'
 import { Route as GuestRegisterRouteImport } from './routes/_guest/register'
 import { Route as MovieIdRouteImport } from './routes/movie.$id'
 import { Route as TvIdRouteImport } from './routes/tv.$id'
+import { Route as AuthenticatedAdminStatsRouteImport } from './routes/_authenticated/admin_.stats'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -62,6 +63,11 @@ const TvIdRoute = TvIdRouteImport.update({
   path: '/tv/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminStatsRoute = AuthenticatedAdminStatsRouteImport.update({
+  id: '/admin_/stats',
+  path: '/admin/stats',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/register': typeof GuestRegisterRoute
   '/movie/$id': typeof MovieIdRoute
   '/tv/$id': typeof TvIdRoute
+  '/admin/stats': typeof AuthenticatedAdminStatsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -80,6 +87,7 @@ export interface FileRoutesByTo {
   '/register': typeof GuestRegisterRoute
   '/movie/$id': typeof MovieIdRoute
   '/tv/$id': typeof TvIdRoute
+  '/admin/stats': typeof AuthenticatedAdminStatsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -92,6 +100,7 @@ export interface FileRoutesById {
   '/_guest/register': typeof GuestRegisterRoute
   '/movie/$id': typeof MovieIdRoute
   '/tv/$id': typeof TvIdRoute
+  '/_authenticated/admin_/stats': typeof AuthenticatedAdminStatsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -103,6 +112,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/movie/$id'
     | '/tv/$id'
+    | '/admin/stats'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -112,6 +122,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/movie/$id'
     | '/tv/$id'
+    | '/admin/stats'
   id:
     | '__root__'
     | '/'
@@ -123,6 +134,7 @@ export interface FileRouteTypes {
     | '/_guest/register'
     | '/movie/$id'
     | '/tv/$id'
+    | '/_authenticated/admin_/stats'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -198,17 +210,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TvIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin_/stats': {
+      id: '/_authenticated/admin_/stats'
+      path: '/admin/stats'
+      fullPath: '/admin/stats'
+      preLoaderRoute: typeof AuthenticatedAdminStatsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAdminStatsRoute: typeof AuthenticatedAdminStatsRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAdminStatsRoute: AuthenticatedAdminStatsRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

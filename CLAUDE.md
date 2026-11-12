@@ -38,6 +38,8 @@ Le back Spring Boot est dans un repo séparé. Déploiement : Render Static Site
   - `POST /api/admin/users/{id}/ai-access/grant|reject|revoke` → 200 + `AdminUser` ; erreurs 404 `NOT_FOUND`, 409 `INVALID_AI_ACCESS_TRANSITION` / `CONCURRENT_MODIFICATION`, 403 `SELF_ACCESS_CHANGE`
   - Compteur des demandes : `?aiAccess=PENDING&size=1` puis `totalElements`
   - `GET /api/admin/users/{id}/ai-access/history` → `[{ eventId, type: 'REQUESTED'|'GRANTED'|'REJECTED'|'REVOKED', previousStatus, newStatus, decidedBy: { id, username } | null, occurredAt }]`, le plus récent d'abord ; 404 `NOT_FOUND`. Alimenté par Kafka côté back : cohérence à terme (quelques ms après une action)
+  - `GET /api/admin/stats?minutes=` (1-60) → `SearchStats` (`src/features/admin/stats/types.ts`) : par mode `CLASSIC`/`AI` volume, taux d'erreur et de cache (0-1), latence moyenne/max, top 10 requêtes et titres ; `timeline` minute par minute ; 503 `STATS_UNAVAILABLE` tant que Kafka Streams démarre ; remis à zéro à chaque redémarrage du back
+  - `GET /api/admin/stats/stream?minutes=` : SSE (`EventSource`), événement `stats` (même JSON) tout de suite puis toutes les 2 s, `unavailable` pendant le démarrage du flux, fermé après 15 min (reconnexion automatique)
 - Aucun appel direct à TMDB ni aucune clé dans le front ; seules les images viennent de image.tmdb.org
 
 ## Auth et CSRF
@@ -49,6 +51,8 @@ Le back Spring Boot est dans un repo séparé. Déploiement : Render Static Site
 - Statuts IA : `NONE` → (demande) `PENDING` → `GRANTED` (grant) ou `REJECTED` (reject, l'utilisateur peut redemander) ; `revoke` : `GRANTED` → `NONE`. Seul `aiAccess === 'GRANTED'` ouvre la recherche IA (rôle admin compris) : `useAiAccess()` + `AiAccessGate` dans la barre de recherche. Un 403 `AI_ACCESS_REQUIRED` invalide `/me`.
 - `/admin` (sous `_authenticated`) : redirige vers l'accueil si `role !== 'ADMIN'` ; filtre `status` (`PENDING` par défaut), `q` et `page` dans les search params ; après une action, invalidation de `['admin', 'users']` (liste + compteur + historiques).
 - Historique d'accès IA : `AiAccessHistorySheet` (shadcn `Sheet`, bouton dans la colonne actions), query `['admin', 'users', 'history', userId]`. Tant que `historyIsBehind` (dernière entrée ≠ statut courant), refetch toutes les secondes, 8 fois max : le back écrit l'historique via Kafka après la réponse HTTP.
+- `/admin/stats` (route `_authenticated/admin_.stats.tsx`, hors du layout `/admin` ; garde `requireAdmin` partagée) : `useLiveSearchStats(minutes)` ouvre l'`EventSource` ; sans événement en 8 s (proxy qui met en tampon, refus) ou flux fermé, repli sur `searchStatsOptions` toutes les 5 s (un 401 y passe par le `QueryCache`). Statuts affichés : `connecting`, `live`, `warming`, `polling`. `minutes` (5, 15, 60) dans l'URL. Navigation entre les pages admin : `AdminNav`
+- Graphiques : shadcn `chart` (Recharts), chargé seulement dans le chunk de `/admin/stats` (code splitting du routeur). Couleurs des modes dans `stats/modes.ts` (palette validée contraste + daltonisme sur la surface sombre), texte toujours en couleurs de texte, pas d'animation Recharts (mise à jour toutes les 2 s), table `sr-only` pour la courbe
 - Login, register et logout suppriment les queries propres au compte (`['ai-search']`, `['admin']`).
 - Le search param `redirect` n'accepte que des chemins internes (`redirectSearchSchema`).
 
