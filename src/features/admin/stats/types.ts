@@ -6,7 +6,10 @@ export interface Ranked {
 }
 
 export interface ModeStats {
+  /** Requêtes envoyées au back, frappes intermédiaires comprises. */
   searches: number
+  /** Recherches au sens de l'utilisateur : frappes successives d'un onglet regroupées (fenêtres de session Kafka Streams). */
+  intents: number
   errors: number
   /** Entre 0 et 1. */
   errorRate: number
@@ -25,7 +28,10 @@ export interface TimelinePoint {
   ai: number
 }
 
-/** `GET /api/admin/stats` et événement `stats` du flux SSE : agrégats Kafka Streams, remis à zéro à chaque redémarrage du back. */
+/**
+ * `GET /api/admin/stats` et événement `stats` du flux SSE : agrégats Kafka Streams, remis à zéro à chaque redémarrage du back.
+ * `topQueries` et `topTitles` comptent des recherches ; latences, taux et `timeline` comptent des requêtes.
+ */
 export interface SearchStats {
   generatedAt: string
   windowMinutes: number
