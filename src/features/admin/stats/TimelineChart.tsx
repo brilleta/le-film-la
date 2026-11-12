@@ -16,11 +16,11 @@ const chartConfig = {
   ai: { label: 'IA', color: modeMeta.AI.color },
 } satisfies ChartConfig
 
-/** Requêtes envoyées par minute (frappes intermédiaires comprises), une ligne par mode ; une table masquée donne les mêmes chiffres aux lecteurs d'écran. */
+/** Recherches par minute, une ligne par mode ; une table masquée donne les mêmes chiffres aux lecteurs d'écran. */
 export function TimelineChart({ timeline }: { timeline: TimelinePoint[] }) {
   return (
     <figure className="glass space-y-3 rounded-2xl p-4">
-      <figcaption className="font-heading text-lg font-semibold">Requêtes par minute</figcaption>
+      <figcaption className="font-heading text-lg font-semibold">Recherches par minute</figcaption>
       <ChartContainer config={chartConfig} className="aspect-auto h-64 w-full" aria-hidden="true">
         <LineChart data={timeline} margin={{ top: 8, right: 12, bottom: 0, left: -12 }} accessibilityLayer>
           <CartesianGrid vertical={false} strokeOpacity={0.15} />
@@ -45,7 +45,7 @@ export function TimelineChart({ timeline }: { timeline: TimelinePoint[] }) {
         </LineChart>
       </ChartContainer>
       <table className="sr-only">
-        <caption>Requêtes par minute</caption>
+        <caption>Recherches par minute</caption>
         <thead>
           <tr>
             <th scope="col">Minute</th>

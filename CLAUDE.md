@@ -25,7 +25,6 @@ Le back Spring Boot est dans un repo séparé. Déploiement : Render Static Site
 - `nginx/` : conf nginx (template avec `BACKEND_URL`)
 
 ## Contrat d'API du back
-- `GET /api/movies/search?q=` et `POST /api/ai/search` envoient le header `X-Search-Session` (`searchSessionHeaders()` de `src/lib/searchSession.ts` : identifiant aléatoire par onglet en sessionStorage, sans lien avec le compte) : le back regroupe les frappes successives en une recherche dans ses stats
 - `GET /api/movies/search?q=` / `GET /api/movies/{type}/{id}` (type = `movie` | `tv`) / `GET /api/trending`
 - `POST /api/ai/search` `{ "description" }` (connecté + `aiAccess = GRANTED`, sinon 401 ou 403 `AI_ACCESS_REQUIRED`) → `{ "results": [{ "tmdbId", "type", "title", "year", "posterPath", "voteAverage", "reason" }] }`
 - Erreurs : `{ "error", "message" }` (dont dépassement de la limite de requêtes)
@@ -39,7 +38,7 @@ Le back Spring Boot est dans un repo séparé. Déploiement : Render Static Site
   - `POST /api/admin/users/{id}/ai-access/grant|reject|revoke` → 200 + `AdminUser` ; erreurs 404 `NOT_FOUND`, 409 `INVALID_AI_ACCESS_TRANSITION` / `CONCURRENT_MODIFICATION`, 403 `SELF_ACCESS_CHANGE`
   - Compteur des demandes : `?aiAccess=PENDING&size=1` puis `totalElements`
   - `GET /api/admin/users/{id}/ai-access/history` → `[{ eventId, type: 'REQUESTED'|'GRANTED'|'REJECTED'|'REVOKED', previousStatus, newStatus, decidedBy: { id, username } | null, occurredAt }]`, le plus récent d'abord ; 404 `NOT_FOUND`. Alimenté par Kafka côté back : cohérence à terme (quelques ms après une action)
-  - `GET /api/admin/stats?minutes=` (1-60) → `SearchStats` (`src/features/admin/stats/types.ts`) : par mode `CLASSIC`/`AI` `searches` (requêtes, frappes intermédiaires comprises), `intents` (recherches : frappes regroupées), taux d'erreur et de cache (0-1), latence moyenne/max, top 10 requêtes et titres (comptés en recherches) ; `timeline` minute par minute (en requêtes) ; 503 `STATS_UNAVAILABLE` tant que Kafka Streams démarre ; remis à zéro à chaque redémarrage du back
+  - `GET /api/admin/stats?minutes=` (1-60) → `SearchStats` (`src/features/admin/stats/types.ts`) : par mode `CLASSIC`/`AI` volume, taux d'erreur et de cache (0-1), latence moyenne/max, top 10 requêtes et titres ; `timeline` minute par minute ; 503 `STATS_UNAVAILABLE` tant que Kafka Streams démarre ; remis à zéro à chaque redémarrage du back
   - `GET /api/admin/stats/stream?minutes=` : SSE (`EventSource`), événement `stats` (même JSON) tout de suite puis toutes les 2 s, `unavailable` pendant le démarrage du flux, fermé après 15 min (reconnexion automatique)
 - Aucun appel direct à TMDB ni aucune clé dans le front ; seules les images viennent de image.tmdb.org
 
