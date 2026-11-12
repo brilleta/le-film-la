@@ -1,0 +1,33 @@
+# Blueprint Render : site statique (CDN, gratuit, sans mise en veille).
+# Le front appelle /api en relatif : la première rewrite proxifie vers le back côté serveur,
+# le navigateur reste sur un seul domaine (cookies httpOnly + CSRF same-origin inchangés).
+services:
+  - type: web
+    name: le-film-la
+    runtime: static
+    branch: main
+    # pnpm installé explicitement : Render ne documente pas de sélection de version pnpm
+    buildCommand: npm install -g pnpm@12.16.1 && pnpm install --frozen-lockfile && pnpm build
+    staticPublishPath: dist
+    autoDeploy: true
+    envVars:
+      # Vite 8 exige Node ≥ 20.19 / 22.12 ; 24 = LTS
+      - key: NODE_VERSION
+        value: "24"
+      # Empêche Render de lancer un `npm install` automatique avant la commande de build
+      - key: SKIP_INSTALL_DEPS
+        value: "true"
+    routes:
+      # L'ordre compte : le proxy API avant le fallback SPA.
+      # Remplacer la destination par l'URL réelle du back une fois celui-ci déployé.
+      - type: rewrite
+        source: /api/*
+        destination: https://le-film-la-back.onrender.com/api/*
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      # Noms de fichiers hashés : cache illimité (même règle que nginx/default.conf.template)
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable

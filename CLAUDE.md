@@ -2,7 +2,7 @@
 
 Appli de recherche de films et séries avec deux modes : classique et IA (description approximative).
 Titre accueil : "Mais Si ! Le film là !" — slogan : "Décris-le mal, on le trouve quand même."
-Le back Spring Boot est dans un repo séparé. Déploiement : Docker (nginx) sur Coolify.
+Le back Spring Boot est dans un repo séparé. Déploiement : Render Static Site (rewrite `/api/*` vers le back) ; voir `render.yaml`. `Dockerfile` et `nginx/` restent pour Coolify ou un test local.
 
 ## Stack
 - Vite + React + TypeScript strict, pnpm
