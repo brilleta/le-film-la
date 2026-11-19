@@ -28,6 +28,7 @@ Le back Spring Boot est dans un repo séparé. Déploiement : Render Static Site
 - `GET /api/movies/search?q=` / `GET /api/movies/{type}/{id}` (type = `movie` | `tv`) / `GET /api/trending`
 - `POST /api/ai/search` `{ "description" }` (connecté + `aiAccess = GRANTED`, sinon 401 ou 403 `AI_ACCESS_REQUIRED`) → `{ "results": [{ "tmdbId", "type", "title", "year", "posterPath", "voteAverage", "reason" }] }`
 - Erreurs : `{ "error", "message" }` (dont dépassement de la limite de requêtes)
+- Header `X-Trace-Id` sur les réponses : lu par `apiFetch` dans `ApiError.traceId` ; `errorReference()` le renvoie pour les 5xx seulement, affiché comme « Référence » (8 premiers caractères, copie de l'identifiant complet) dans `ErrorState` et les toasts d'erreur des actions admin
 - Auth (JWT en cookie httpOnly, jamais lu par le front) :
   - `POST /api/auth/register` `{ email, username, password }` → 201 + utilisateur ; `POST /api/auth/login` `{ email, password }` → 200 + utilisateur
   - `POST /api/auth/logout` → 204 sans corps ; `GET /api/auth/me` → `{ id, email, username, role, aiAccess }` ou 401 (= non connecté)

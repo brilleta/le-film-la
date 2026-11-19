@@ -1,7 +1,7 @@
 import { keepPreviousData, queryOptions, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { currentUserKey } from '@/features/auth/authQueries'
-import { ApiError, apiFetch } from '@/lib/api'
+import { ApiError, apiFetch, errorReference } from '@/lib/api'
 import type { AdminSearch } from './searchParams'
 import type { AdminUser, AdminUsersPage, AiAccessAction, AiAccessHistoryEntry } from './types'
 
@@ -82,7 +82,10 @@ export function useAiAccessAction(currentUserId: string | undefined) {
       toast.success(successMessages[action](updated.username))
       if (updated.id === currentUserId) void queryClient.invalidateQueries({ queryKey: currentUserKey })
     },
-    onError: (error) => toast.error(actionErrorMessage(error)),
+    onError: (error) => {
+      const reference = errorReference(error)
+      toast.error(actionErrorMessage(error), reference ? { description: `Référence : ${reference}` } : undefined)
+    },
     // La ligne quitte souvent le filtre courant : on recharge la liste et le compteur plutôt que de les deviner.
     onSettled: () => queryClient.invalidateQueries({ queryKey: adminUsersKey }),
   })
