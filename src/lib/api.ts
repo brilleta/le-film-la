@@ -6,17 +6,28 @@ export class ApiError extends Error {
   readonly status: number
   /** Champ `error` du back, quand il est présent. */
   readonly code: string | null
+  /** Header `X-Trace-Id` du back : identifiant de la trace, pour retrouver la requête dans Grafana. */
+  readonly traceId: string | null
 
-  constructor(message: string, status: number, code: string | null = null) {
+  constructor(message: string, status: number, code: string | null = null, traceId: string | null = null) {
     super(message)
     this.name = 'ApiError'
     this.status = status
     this.code = code
+    this.traceId = traceId
   }
 
   get isRetryable() {
     return this.status >= 500
   }
+}
+
+/**
+ * Référence à donner avec une erreur inattendue (5xx) : l'identifiant de trace du back.
+ * Rien pour les refus attendus (4xx), où le message suffit.
+ */
+export function errorReference(error: unknown) {
+  return error instanceof ApiError && error.status >= 500 ? error.traceId : null
 }
 
 const UNSAFE_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
@@ -39,7 +50,7 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
 
   if (!response.ok) {
     const { message, code } = await errorBody(response)
-    throw new ApiError(message, response.status, code)
+    throw new ApiError(message, response.status, code, response.headers.get('X-Trace-Id'))
   }
 
   // Logout répond 204 sans corps.
